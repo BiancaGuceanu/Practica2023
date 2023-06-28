@@ -479,32 +479,51 @@ function stergeUtilizator()
 
 function schimbaNumeUtilizator() 
 {
+    read -p "Utilizatorul: " utiliz
     read -p "Tasteaza noul nume:" numeNou
     
-    sudo usermod -l "$numeNou" "$1"
+    sudo usermod -l "$numeNou" "$utiliz"
     
     if [ $? -eq 0 ]; then
-        echo "Numele utilizatorului a fost schimbat cu succes în $numeNou."
+        echo "Numele utilizatorului $utiliz a fost schimbat cu succes în $numeNou."
     else
         echo "Eroare: Nu s-a putut schimba numele utilizatorului."
     fi
 }
 
+function schimbaDirector()
+{
+   read -p "Alege noul director: " dir
+   if [[ -d $dir ]]
+   then
+   sudo usermod -d "$dir" "$1"
+   else
+   echo Nu s-a ales un director.
+   schimbaDirector "$1"
+   fi
+}
 
 
 function utilizatori()
 {
   if id "$1" >/dev/null 2>&1;
   then
-  verificaParolaUtilizator "$1"
+  
+  ID=`id -u "$1"`
+  hd=`grep "^$1:" /etc/passwd |cut -f6 -d':'`
+  echo ID utilizator: $ID
+  echo Home Directory: $hd
   drepturiDeSudo "$1"
   grupuri "$1"
+  verificaParolaUtilizator "$1"
   
   echo Meniu
   echo 1.Adauga utilizatorul intr-un grup.
   echo 2.Sterge utilizatorul dintr-un grup.
   echo 3.Sterge utilizator din sistem.
-  echo 4.Schimba numele utilizatorului.
+  echo 4.Schimba numele unui alt utilizator.
+  echo 5.Schimba directorul utilizatorului.
+  echo 6.Exit
   read -p "Alege optiune:" opt
   
   if [[ $opt -eq 1 ]]
@@ -523,6 +542,23 @@ function utilizatori()
   then
   stergeUtilizator "$1"
   utilizatori "$1"
+  fi
+  
+  if [[ $opt -eq 4 ]]
+  then
+  schimbaNumeUtilizator "$1"
+  utilizatori "$1"
+  fi
+   
+  if [[ $opt -eq 5 ]]
+  then
+  schimbaDirector "$1"
+  utilizatori "$1"
+  fi
+  
+  if [[ $opt -eq 6 ]]
+  then
+  exit 0
   fi
 
   fi
